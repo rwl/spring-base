@@ -1,4 +1,4 @@
-package com.ncond.jpower.domain;
+package com.vaadin.addon.springbase.account;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,8 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(identifierColumn = "user_id", table = "users")
-public class JPowerUser implements UserDetails {
+@RooJpaActiveRecord(identifierColumn = "user_id", table = "account")
+public class Account implements UserDetails {
 
     private static final long serialVersionUID = -5706435451865101650L;
 
@@ -28,7 +28,7 @@ public class JPowerUser implements UserDetails {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role")
-    private UserRole userRole;
+    private Role userRole;
 
     @Column(name = "first_name")
     private String firstName;
@@ -41,7 +41,7 @@ public class JPowerUser implements UserDetails {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private UserStatus status;
+    private Status status;
 
     @Override
     public String getUsername() {
@@ -70,7 +70,7 @@ public class JPowerUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-	    return status == UserStatus.ACTIVE;
+	    return status == Status.ACTIVE;
     }
 
     @Override
@@ -79,4 +79,5 @@ public class JPowerUser implements UserDetails {
         authorities.add(new SimpleGrantedAuthority(userRole.name()));
         return authorities;
     }
+
 }

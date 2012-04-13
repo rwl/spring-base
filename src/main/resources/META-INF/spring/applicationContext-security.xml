@@ -22,6 +22,8 @@
     <!-- Configure authentication mechanism -->
     <authentication-manager alias="authenticationManager">
         <authentication-provider>
+            <!-- SHA-256 values can be produced using 'echo -n your_desired_password | sha256sum' (using normal *nix environments) -->
+            <password-encoder hash="sha-256" />
 	        <jdbc-user-service
                 data-source-ref="dataSource"
                 users-by-username-query=
@@ -30,7 +32,7 @@
                             U.password,
                             U.status = 'ACTIVE'
                          FROM
-                            users U
+                            account U
                          WHERE
                             U.username=?"
                 authorities-by-username-query=
@@ -38,7 +40,7 @@
                             U.username,
                             U.user_role as authority
                          FROM
-                            users U
+                            account U
                          WHERE
                             U.username=?" />
         </authentication-provider>

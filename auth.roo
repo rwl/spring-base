@@ -1,8 +1,8 @@
 # Project
-project --topLevelPackage com.ncond.jpower.auth
+project --topLevelPackage com.vaadin.addon.springbase
 
 # Persistence
-persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY --databaseName jpowerusers --hostName localhost
+persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY --databaseName accounts --hostName localhost
 
 # Dependencies
 #dependency add --groupId org.springframework.security --artifactId spring-security-core --version 3.1.0.RELEASE
@@ -14,25 +14,25 @@ persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY --databas
 #dependency add --groupId org.openid4java --artifactId openid4java --version 0.9.5
 
 # Domain model
-enum type --class ~.domain.UserRole
+enum type --class ~.account.Role
 enum constant --name ROLE_ADMIN
 enum constant --name ROLE_USER
 
-enum type --class ~.domain.UserStatus
+enum type --class ~.account.Status
 enum constant --name ACTIVE
 enum constant --name SUSPENDED
 
-entity jpa --class ~.domain.JPowerUser  --table users --identifierColumn user_id
+entity jpa --class ~.account.Account  --table account --identifierColumn user_id
 field string --fieldName username --notNull
 field string --fieldName password --notNull
-field enum --type ~.domain.UserRole --fieldName userRole --notNull --enumType STRING
+field enum --type ~.domain.Role --fieldName userRole --notNull --enumType STRING
 field string --fieldName firstName --column first_name
 field string --fieldName lastName --column last_name
 field string --fieldName emailAddress --column email_address
-field enum --type ~.domain.UserStatus --fieldName status --notNull --enumType STRING
+field enum --type ~.domain.Status --fieldName status --notNull --enumType STRING
 
 # we will also need a finder
-#finder add --finderName findUsersByOpenIdIdentifier --class ~.domain.User
+#finder add --finderName findUsersByOpenIdIdentifier --class ~.account.Account
 
 # Scaffold the web frontend
 #controller all --package ~.web
