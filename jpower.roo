@@ -1,0 +1,101 @@
+project --topLevelPackage com.ncond.jpower --projectName jpower-web
+
+persistence setup --provider DATANUCLEUS --database GOOGLE_APP_ENGINE
+
+#dependency add --groupId com.ncond --artifactId jpower --version 0.0.1
+
+enum type --class ~.jpc.BusType
+enum constant --name PQ
+enum constant --name PV
+enum constant --name REFERENCE
+enum constant --name ISOLATED
+
+enum type --class ~.jpc.CostModel
+enum constant --name POLYNOMIAL
+enum constant --name PIECEWISE_LINEAR
+
+entity jpa --class ~.jpc.Bus
+field number --fieldName i --type java.lang.Integer --unique --notNull
+field enum --fieldName type --type ~.jpc.BusType --notNull
+field number --fieldName activeDemand --type double
+field number --fieldName reactiveDemand --type double
+field number --fieldName susceptance --type double
+field number --fieldName conductance --type double
+field number --fieldName area --type int --value 1
+field number --fieldName voltageMag --type double --value 1.0
+field number --fieldName voltageAng --type double
+field number --fieldName voltageBase --type double --value 100.0
+field number --fieldName lossZone --type int --value 1
+field number --fieldName voltageMax --type double --value 1.1
+field number --fieldName voltageMin --type double --value 0.9
+field number --fieldName activeLambda --type double
+field number --fieldName reactiveLambda --type double
+field number --fieldName voltageMaxMu --type double
+field number --fieldName voltageMinMu --type double
+
+entity jpa --class ~.jpc.Generator
+field reference --fieldName bus --type ~.jpc.Bus --notNull
+field number --fieldName activeOutput --type double
+field number --fieldName reactiveOutput --type double
+field number --fieldName reactiveMax --type double
+field number --fieldName reactiveMin --type double
+field number --fieldName voltageMag --type double --value 1.0
+field number --fieldName machineBase --value 100.0 --type double
+field boolean --fieldName online --value true
+field number --fieldName activeMax --type double
+field number --fieldName activeMin --type double
+field number --fieldName activeCapability1 --type double
+field number --fieldName activeCapability2 --type double
+field number --fieldName reactiveCapabilityMin1 --type double
+field number --fieldName reactiveCapabilityMax1 --type double
+field number --fieldName reactiveCapabilityMin2 --type double
+field number --fieldName reactiveCapabilityMax2 --type double
+field number --fieldName rampAGC --type double
+field number --fieldName ramp10 --type double
+field number --fieldName ramp30 --type double
+field number --fieldName rampReactive --type double
+field number --fieldName activeParticipationFactor --type double
+field number --fieldName activeMaxMu --type double
+field number --fieldName activeMinMu --type double
+field number --fieldName reactiveMaxMu --type double
+field number --fieldName reactiveMinMu --type double
+
+entity jpa --class ~.jpc.Branch
+field reference --fieldName fromBus --type ~.jpc.Bus --notNull
+field reference --fieldName toBus --type ~.jpc.Bus --notNull
+field number --fieldName resistance --type double
+field number --fieldName reactance --type double
+field number --fieldName susceptance --type double
+field number --fieldName rateA --type double
+field number --fieldName rateB --type double
+field number --fieldName rateC --type double
+field number --fieldName turnsRatio --type double --value 1.0
+field number --fieldName phaseShift --type double
+field boolean --fieldName online --value true
+field number --fieldName angleMin --type double
+field number --fieldName angleMax --type double
+field number --fieldName activeFrom --type double
+field number --fieldName reactiveFrom --type double
+field number --fieldName activeTo --type double
+field number --fieldName reactiveTo --type double
+field number --fieldName apparentFromMu --type double
+field number --fieldName apparentToMu --type double
+field number --fieldName angleMinMu --type double
+field number --fieldName angleMaxMu --type double
+
+entity jpa --class ~.jpc.Cost
+field enum --fieldName costModel --type ~.jpc.GenCostModel --notNull
+field number --fieldName startupCost --type double
+field number --fieldName shutdownCost --type double
+field number --fieldName numCost --type double
+field other --fieldName costs --type List
+
+field reference --fieldName cost --type ~.jpc.Cost --class ~.jpc.Generator
+
+entity jpa --class ~.jpc.JPowerCase
+field string --fieldName name
+field number --fieldName baseMVA --type double --notNull --value 100.0
+field number --fieldName version --type int --value 2
+field set --fieldName buses --type ~.jpc.Bus
+field set --fieldName branches --type ~.jpc.Branch
+field set --fieldName generators --type ~.jpc.Generator

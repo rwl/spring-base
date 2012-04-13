@@ -1,0 +1,45 @@
+# Project
+project --topLevelPackage com.ncond.jpower.auth
+
+# Persistence
+persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY --databaseName jpowerusers --hostName localhost
+
+# Dependencies
+#dependency add --groupId org.springframework.security --artifactId spring-security-core --version 3.1.0.RELEASE
+#dependency add --groupId org.springframework.security --artifactId spring-security-config --version 3.1.0.RELEASE
+#dependency add --groupId org.springframework.security --artifactId spring-security-web --version 3.1.0.RELEASE
+#dependency add --groupId org.springframework.security --artifactId spring-security-taglibs --version 3.1.0.RELEASE
+
+#dependency add --groupId org.springframework.security --artifactId spring-security-openid --version 3.0.5.RELEASE
+#dependency add --groupId org.openid4java --artifactId openid4java --version 0.9.5
+
+# Domain model
+enum type --class ~.domain.UserRole
+enum constant --name ROLE_ADMIN
+enum constant --name ROLE_USER
+
+enum type --class ~.domain.UserStatus
+enum constant --name ACTIVE
+enum constant --name SUSPENDED
+
+entity jpa --class ~.domain.JPowerUser  --table users --identifierColumn user_id
+field string --fieldName username --notNull
+field string --fieldName password --notNull
+field enum --type ~.domain.UserRole --fieldName userRole --notNull --enumType STRING
+field string --fieldName firstName --column first_name
+field string --fieldName lastName --column last_name
+field string --fieldName emailAddress --column email_address
+field enum --type ~.domain.UserStatus --fieldName status --notNull --enumType STRING
+
+# we will also need a finder
+#finder add --finderName findUsersByOpenIdIdentifier --class ~.domain.User
+
+# Scaffold the web frontend
+#controller all --package ~.web
+
+# Spring Security
+#security setup
+
+# Other classes
+#class --class ~.InsertTestData
+#class --class ~.OpenIdUserDetailsService

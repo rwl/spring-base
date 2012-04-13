@@ -1,0 +1,38 @@
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log opened at 2012-04-13 01:50:35
+quit
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log closed at 2012-04-13 01:50:58
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log opened at 2012-04-13 01:54:23
+project --topLevelPackage com.ncond.jpower --projectName jpower-web
+persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY
+enum type --class ~.domain.UserRole
+enum constant --name ROLE_ADMIN
+enum constant --name ROLE_USER
+// [failed] script --file ../jpower-app/auth.roo
+quit
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log closed at 2012-04-13 01:55:43
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log opened at 2012-04-13 02:03:57
+// [failed] entity jpa --class ~.domain.User  --table users --identifierColumn user_id
+// [failed] script --file ../jpower-app/auth.roo
+entity jpa --class ~.domain.JPowerUser  --table users --identifierColumn user_id
+field string --fieldName username --notNull
+field string --fieldName password --notNull
+field enum --type ~.domain.UserRole --fieldName userRole --notNull
+field string --fieldName firstName --column first_name
+field string --fieldName lastName --column last_name
+field string --fieldName emailAddress --column email_address
+// script --file ../jpower-app/auth.roo
+quit
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log closed at 2012-04-13 02:08:50
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log opened at 2012-04-13 02:35:37
+dependency add --groupId org.springframework.security --artifactId spring-security-core --version 3.1.0.RELEASE
+dependency add --groupId org.springframework.security --artifactId spring-security-config --version 3.1.0.RELEASE
+dependency add --groupId org.springframework.security --artifactId spring-security-web --version 3.1.0.RELEASE
+dependency add --groupId org.springframework.security --artifactId spring-security-taglibs --version 3.1.0.RELEASE
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log opened at 2012-04-13 02:37:00
+field boolean --fieldName active --class ~.domain.JPowerUser --value true
+quit
+// Spring Roo 1.2.1.RELEASE [rev 6eae723] log closed at 2012-04-13 03:17:25
+enum type --class ~.domain.UserStatus
+enum constant --name ACTIVE
+enum constant --name SUSPENDED
+field enum --type ~.domain.UserStatus --fieldName status --notNull --enumType STRING --class ~.domain.JPowerUser
