@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(identifierColumn = "user_id", table = "account")
+@RooJpaActiveRecord(identifierColumn = "user_id", table = "account", finders = { "findAccountsByUsername" })
 public class Account implements UserDetails {
 
     private static final long serialVersionUID = -5706435451865101650L;
@@ -70,14 +70,13 @@ public class Account implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-	    return status == Status.ACTIVE;
+        return status == Status.ACTIVE;
     }
 
     @Override
-    public Collection<org.springframework.security.core.authority.SimpleGrantedAuthority> getAuthorities() {
+    public Collection<SimpleGrantedAuthority> getAuthorities() {
         Collection<SimpleGrantedAuthority> authorities = new HashSet<SimpleGrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(userRole.name()));
         return authorities;
     }
-
 }

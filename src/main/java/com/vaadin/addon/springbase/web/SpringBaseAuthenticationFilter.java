@@ -33,7 +33,7 @@ public class SpringBaseAuthenticationFilter extends AbstractAuthenticationProces
 		return false;
 	}
 
-	protected void performLogin(HttpServletRequest request, HttpServletResponse response,
+	protected boolean performLogin(HttpServletRequest request, HttpServletResponse response,
 			String username, String password) {
 
 	        if (username == null) username = "";
@@ -52,11 +52,11 @@ public class SpringBaseAuthenticationFilter extends AbstractAuthenticationProces
 	        	authResult = getAuthenticationManager().authenticate(authRequest);
 	        } catch (AuthenticationException failed) {
 	        	unsuccessfulAuthentication(request, response, failed);
-	        	return;
+	        	return false;
 	        }
 	        successfulAuthentication(request, response, null, authResult);
 
-		return;
+		return true;
 	}
 
 //	protected String obtainPassword() {

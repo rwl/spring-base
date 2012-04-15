@@ -18,16 +18,17 @@
         <intercept-url pattern="/member/**" access="isAuthenticated()" />
         <intercept-url pattern="/resources/**" access="permitAll" />
         <intercept-url pattern="/login/**" access="permitAll" />
-        <intercept-url pattern="/account/**" access="isAuthenticated()" />
+        <intercept-url pattern="/spring-base/account/**" access="isAuthenticated()" />
+        <intercept-url pattern="/account/" access="isAuthenticated()" />
         <intercept-url pattern="/**" access="permitAll" />
     </http>
 
     <!-- Configure authentication mechanism -->
     <authentication-manager alias="authenticationManager">
-        <authentication-provider>
+        <authentication-provider user-service-ref="userDetailsService">
             <!-- SHA-256 values can be produced using 'echo -n your_desired_password | sha256sum' (using normal *nix environments) -->
             <password-encoder hash="sha-256" />
-	        <jdbc-user-service
+	        <!-- <jdbc-user-service
                 data-source-ref="dataSource"
                 users-by-username-query=
                         "SELECT
@@ -45,7 +46,7 @@
                          FROM
                             account U
                          WHERE
-                            U.username=?" />
+                            U.username=?" /> -->
         </authentication-provider>
     </authentication-manager>
 
