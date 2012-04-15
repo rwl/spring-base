@@ -6,6 +6,7 @@ package com.vaadin.addon.springbase.account;
 import com.vaadin.addon.springbase.account.Account;
 import com.vaadin.addon.springbase.account.Role;
 import com.vaadin.addon.springbase.account.Status;
+import java.util.Date;
 
 privileged aspect Account_Roo_JavaBean {
     
@@ -55,6 +56,22 @@ privileged aspect Account_Roo_JavaBean {
     
     public void Account.setStatus(Status status) {
         this.status = status;
+    }
+    
+    public Date Account.getCreatedOn() {
+        return this.createdOn;
+    }
+    
+    public void Account.setCreatedOn(Date createdOn) {
+        this.createdOn = createdOn;
+    }
+    
+    public Date Account.getLastSignIn() {
+        return this.lastSignIn;
+    }
+    
+    public void Account.setLastSignIn(Date lastSignIn) {
+        this.lastSignIn = lastSignIn;
     }
     
 }
