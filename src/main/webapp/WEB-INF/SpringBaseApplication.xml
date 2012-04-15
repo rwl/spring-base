@@ -12,9 +12,11 @@
     <!-- Activate Spring annotation support -->
     <context:annotation-config/>
 
-    <!-- Expose and configure the Vaadin application bean itself (i.e., the HelloWorld bean) using this context
-    <bean id="helloWorld" class="com.vaadin.addon.springbase.web.SpringBaseApplication" factory-method="get"
-      p:someProperty="property value set via bean definition"/> -->
+    <!-- Expose and configure the Vaadin application bean itself (i.e., the HelloWorld bean) using this context -->
+    <bean id="springBase" class="com.vaadin.addon.springbase.web.SpringBaseApplication" factory-method="get"
+      p:windowTitle="Spring Account">
+      <!-- <property name="springBaseAuthenticationFilter"><ref bean="springBaseAuthenticationFilter"/></property> -->
+    </bean>
 
     <!-- Example of an application-specific bean whose lifecycle follows that of the Vaadin application
     <bean class="com.example.MyApplicationBean" depends-on="helloWorld"/> -->

@@ -39,19 +39,21 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 
 	private static final String COMMON_FIELD_WIDTH = "12em";
 
+	private String windowTitle;
+
 //	private final LoginForm login = new LoginForm();
 
 	@Autowired
 	private SpringBaseAuthenticationFilter springBaseAuthenticationFilter;
 
-	private HttpServletRequest request;
-
-	private HttpServletResponse response;
+//	private HttpServletRequest request;
+//
+//	private HttpServletResponse response;
 
 	@Override
 	protected void initSpringApplication(ConfigurableWebApplicationContext arg0) {
 
-	        Window mainWindow = new Window("Spring Base");
+	        Window mainWindow = new Window(windowTitle);
 	        this.setMainWindow(mainWindow);
 
 	        if (!isAuthenticated()) {
@@ -74,13 +76,14 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	}
 
 	protected boolean isAuthenticated() {
+//		return SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
 		UserDetails userDetails = getUserDetails();
 		return userDetails == null ? false : userDetails.isEnabled();
 	}
 
 	protected void logout() {
 		SecurityContextHolder.getContext().setAuthentication(null);
-		HttpSession session = request.getSession();
+		HttpSession session = ContextApplication.currentRequest().getSession();
 		session.invalidate();
 	}
 
@@ -145,7 +148,9 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 			private static final long serialVersionUID = 1855103650370643545L;
 
 			public void onLogin(LoginEvent event) {
-	        		springBaseAuthenticationFilter.performLogin(request, response,
+	        		springBaseAuthenticationFilter.performLogin(
+	        				ContextApplication.currentRequest(),
+	        				ContextApplication.currentResponse(),
 	        				event.getLoginParameter("username"),
 	        				event.getLoginParameter("password"));
 //	        		getMainWindow().showNotification(
@@ -172,7 +177,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		getMainWindow().setContent(layout);
 	}
 
-	    private class UserDetailsFieldFactory extends DefaultFieldFactory {
+	private class UserDetailsFieldFactory extends DefaultFieldFactory {
 
 		private static final long serialVersionUID = 4518551037064353650L;
 
@@ -233,16 +238,20 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        }
 	    }
 
-
-	protected void doOnRequestStart(HttpServletRequest request, HttpServletResponse response) {
-		this.request = request;
-		this.response = response;
+	public void setWindowTitle(String windowTitle) {
+		this.windowTitle = windowTitle;
 	}
 
-	protected void doOnRequestEnd(HttpServletRequest request, HttpServletResponse response) {
-		this.request = request;
-		this.response = response;
-	}
+
+//	protected void doOnRequestStart(HttpServletRequest request, HttpServletResponse response) {
+//		this.request = request;
+//		this.response = response;
+//	}
+//
+//	protected void doOnRequestEnd(HttpServletRequest request, HttpServletResponse response) {
+//		this.request = request;
+//		this.response = response;
+//	}
 
 //	public static SpringBaseApplication get() {
 //		return ContextApplication.get(SpringBaseApplication.class);
