@@ -1,0 +1,15 @@
+@import url(../reindeer/styles.css);
+
+/* Main application background */
+.v-app {
+	background: white;
+	}
+
+.v-customcomponent {}
+.v-customcomponent .v-embedded {}
+/*.v-customcomponent.v-customcomponent-v-loginform.v-loginform {width: 100%}
+.v-customcomponent.v-customcomponent-account.account {width: 240px; height: 200px}*/
+
+/*.v-app-loginpage {width: 100%}*/
+.v-app-loginpage .v-textfield {width: 100%}
+.v-app-loginpage .v-button {}

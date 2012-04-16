@@ -3,8 +3,6 @@ package com.vaadin.addon.springbase.web;
 import java.util.Arrays;
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.dellroad.stuff.vaadin.ContextApplication;
@@ -40,6 +38,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.LoginForm;
 import com.vaadin.ui.LoginForm.LoginEvent;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -65,10 +64,11 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	protected void initSpringApplication(ConfigurableWebApplicationContext arg0) {
 
 	        Window mainWindow = new Window(windowTitle);
+	        mainWindow.setTheme("spring-account");  // select window theme
 	        this.setMainWindow(mainWindow);
 
 	        if (!isAuthenticated()) {
-	        	setMainComponent(buildSignIn());
+	        	setMainComponent(buildWelcome());
 		} else {
 			setMainComponent(buildAccountDetails());
 		}
@@ -100,9 +100,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 
 	protected Layout buildAccountDetails() {
 		final Account userDetails = getUserDetails();
-		if (userDetails == null) {
-	        	return buildSignIn();
-		}
+		if (userDetails == null) return buildWelcome();
 	        BeanItem<Account> userDetailsItem = new BeanItem<Account>(userDetails);
 
 		VerticalLayout layout = new VerticalLayout();
@@ -249,7 +247,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	            @Override
 	            public void buttonClick(Button.ClickEvent event) {
 	        	    registrationForm.discard();
-	        	    setMainComponent(buildSignIn());
+	        	    setMainComponent(buildWelcome());
 	            }
 	        });
 	        signOut.setStyleName(BaseTheme.BUTTON_LINK);
@@ -264,7 +262,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 
 	protected Layout buildChangePassword() {
 		final Account userDetails = getUserDetails();
-		if (userDetails == null) return buildSignIn();
+		if (userDetails == null) return buildWelcome();
 
 		VerticalLayout layout = new VerticalLayout();
 		layout.setSpacing(true);
@@ -301,13 +299,59 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		return layout;
 	}
 
-	protected Layout buildSignIn() {
-		VerticalLayout layout = new VerticalLayout();
+	protected Layout buildWelcome() {
+		HorizontalLayout layout = new HorizontalLayout();
 		layout.setSpacing(true);
 		layout.setMargin(true);
+		layout.setSizeFull();
 
-		LoginForm login = new LoginForm();
-		login.setLoginButtonCaption("Sign in");
+		Button b = new Button("Sign In");
+	        b.setStyleName(BaseTheme.BUTTON_LINK);
+	        b.setDescription("Sign in with your username and password");
+	        b.addListener(new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				setMainComponent(buildSignIn());
+			}
+		});
+		layout.addComponent(b);
+		layout.setComponentAlignment(b, Alignment.TOP_CENTER);
+
+		return layout;
+	}
+
+	protected Layout buildSignIn() {
+//		HorizontalLayout layout = new HorizontalLayout();
+		VerticalLayout layout = new VerticalLayout();
+//		layout.setSpacing(true);
+		layout.setMargin(true);
+
+		HorizontalLayout header = new HorizontalLayout();
+		header.setSpacing(true);
+
+	        Label label = new Label("<h3>Log in</h3>");
+	        label.setContentMode(Label.CONTENT_XHTML);
+	        header.addComponent(label);
+	        header.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
+
+	        Button register = new Button("(Register)", new Button.ClickListener() {
+	            @Override
+	            public void buttonClick(Button.ClickEvent event) {
+	        	    setMainComponent(buildRegisterAccount());
+	            }
+	        });
+	        register.setStyleName(BaseTheme.BUTTON_LINK);
+	        header.addComponent(register);
+	        header.setComponentAlignment(register, Alignment.MIDDLE_LEFT);
+	        layout.addComponent(header);
+
+		LoginForm login = new AccountLoginForm();
+
+	        login.setWidth("300px");
+	        login.setHeight("150px");
+
+//		login.setStyleName("account");
+		login.setLoginButtonCaption("Log in");
+		login.setUsernameCaption("Login or Email");
 	        login.addListener(new LoginForm.LoginListener() {
 
 			private static final long serialVersionUID = 1855103650370643545L;
@@ -346,19 +390,53 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        	}
 
 	        });
+	        // Login form is by default 100% width and height, so consider using it
+	        // inside a sized Panel or Window.
+//	        Panel panel = new Panel();
+//	        panel.addComponent(login);
+//	        panel.setHeight("400px");
+//	        panel.setWidth("600px");
+//	        layout.addComponent(panel);
 	        layout.addComponent(login);
 
-	        Button register = new Button("Register", new Button.ClickListener() {
+//	        VerticalLayout links = new VerticalLayout();
+//	        links.setSpacing(true);
+
+	        Button forgot = new Button("Forgot your password?", new Button.ClickListener() {
 	            @Override
 	            public void buttonClick(Button.ClickEvent event) {
-	        	    setMainComponent(buildRegisterAccount());
+	        	    setMainComponent(buildForgotPassword());
 	            }
 	        });
-	        register.setStyleName(BaseTheme.BUTTON_LINK);
-	        layout.addComponent(register);
-	        layout.setComponentAlignment(register, Alignment.MIDDLE_LEFT);
+	        forgot.setStyleName(BaseTheme.BUTTON_LINK);
+	        layout.addComponent(forgot);
+	        layout.setComponentAlignment(forgot, Alignment.MIDDLE_LEFT);
+
+//	        layout.addComponent(links);
 
 	        return layout;
+	}
+
+
+	protected Layout buildForgotPassword() {
+//		HorizontalLayout layout = new HorizontalLayout();
+		VerticalLayout layout = new VerticalLayout();
+		layout.setSpacing(true);
+		layout.setMargin(true);
+
+	        Button cancel = new Button("Cancel",
+	                new Button.ClickListener() {
+			    private static final long serialVersionUID = 4365033545185510706L;
+	                    public void buttonClick(ClickEvent event) {
+	                        //personForm.discard();
+                                setMainComponent(buildAccountDetails());
+	                    }
+	                });
+	        cancel.setStyleName(BaseTheme.BUTTON_LINK);
+	        layout.addComponent(cancel);
+	        layout.setComponentAlignment(cancel, Alignment.MIDDLE_LEFT);
+
+		return layout;
 	}
 
 	protected void setMainComponent(Layout layout) {
