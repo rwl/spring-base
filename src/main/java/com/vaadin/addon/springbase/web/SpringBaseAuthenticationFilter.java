@@ -33,8 +33,8 @@ public class SpringBaseAuthenticationFilter extends AbstractAuthenticationProces
 		return false;
 	}
 
-	protected boolean performLogin(HttpServletRequest request, HttpServletResponse response,
-			String username, String password) {
+	protected void performLogin(HttpServletRequest request, HttpServletResponse response,
+			String username, String password, boolean remember) {
 
 	        if (username == null) username = "";
 	        if (password == null) password = "";
@@ -49,14 +49,20 @@ public class SpringBaseAuthenticationFilter extends AbstractAuthenticationProces
 
 	        Authentication authResult;
 	        try {
-	        	authResult = getAuthenticationManager().authenticate(authRequest);
-	        } catch (AuthenticationException failed) {
-	        	unsuccessfulAuthentication(request, response, failed);
-	        	return false;
-	        }
-	        successfulAuthentication(request, response, null, authResult);
+		        try {
+		        	authResult = getAuthenticationManager().authenticate(authRequest);
+			        successfulAuthentication(request, response, null, authResult);
+		        } catch (AuthenticationException failed) {
+		        	unsuccessfulAuthentication(request, response, failed);
+//		        	return false;
+		        }
+	        } catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (ServletException e2) {
+			e2.printStackTrace();
+		}
 
-		return true;
+//		return true;
 	}
 
 //	protected String obtainPassword() {
@@ -71,39 +77,43 @@ public class SpringBaseAuthenticationFilter extends AbstractAuthenticationProces
 
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-		            Authentication authResult) {
+		            Authentication authResult) throws IOException, ServletException {
+		successfulAuthentication(request, response, chain, authResult, true);
+	}
+
+	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+		            Authentication authResult, boolean remember) throws IOException, ServletException {
 
 	        SecurityContextHolder.getContext().setAuthentication(authResult);
 
-	        /*if (logger.isDebugEnabled()) {
+	        if (logger.isDebugEnabled()) {
 	            logger.debug("Authentication success. Updating SecurityContextHolder to contain: " + authResult);
 	        }
 
-	        rememberMeServices.loginSuccess(request, response, authResult);
+	        if (remember) getRememberMeServices().loginSuccess(request, response, authResult);
 
 	        // Fire event
 	        if (this.eventPublisher != null) {
 	            eventPublisher.publishEvent(new InteractiveAuthenticationSuccessEvent(authResult, this.getClass()));
 	        }
 
-	        successHandler.onAuthenticationSuccess(request, response, authResult);*/
-
-		// TODO: redirect to the correct application URL
+	        //getSuccessHandler().onAuthenticationSuccess(request, response, authResult);  sends a redirect
 	}
 
 	@Override
 	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException failed) {
+			AuthenticationException failed) throws IOException, ServletException {
+	        SecurityContextHolder.clearContext();
 
-	        /*if (logger.isDebugEnabled()) {
+	        if (logger.isDebugEnabled()) {
 	            logger.debug("Authentication request failed: " + failed.toString());
 	            logger.debug("Updated SecurityContextHolder to contain null Authentication");
-	            logger.debug("Delegating to authentication failure handler" + failureHandler);
+	            logger.debug("Delegating to authentication failure handler" + getFailureHandler());
 	        }
 
-	        rememberMeServices.loginFail(request, response);
+	        getRememberMeServices().loginFail(request, response);
 
-	        failureHandler.onAuthenticationFailure(request, response, failed);*/
+	        //getFailureHandler().onAuthenticationFailure(request, response, failed);  send a redirect
 	}
 
 	/**

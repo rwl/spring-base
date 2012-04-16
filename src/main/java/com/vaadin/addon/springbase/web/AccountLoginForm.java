@@ -73,7 +73,7 @@ public class AccountLoginForm extends LoginForm {
 		      + "<span class='v-button-caption'>"
 		      + getLoginButtonCaption() + "</span>"
 		      + "</span></div></div>"
-		      + "<input type=\"checkbox\" name=\"remember\" value=\"me\" />Remember me?</td></tr>"
+		      + "<input type=\"checkbox\" name=\"remember\" value=\"true\" />Remember me?</td></tr>"
 		      + "</table>"
 		      + "</form></div></body>";
 

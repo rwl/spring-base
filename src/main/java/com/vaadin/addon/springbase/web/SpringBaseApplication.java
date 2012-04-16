@@ -3,11 +3,15 @@ package com.vaadin.addon.springbase.web;
 import java.util.Arrays;
 import java.util.Date;
 
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpSession;
 
 import org.dellroad.stuff.vaadin.ContextApplication;
 import org.dellroad.stuff.vaadin.SpringContextApplication;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,9 +25,13 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.validator.AbstractValidator;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
+import com.vaadin.event.FieldEvents;
+import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
+import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -92,6 +100,18 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		return userDetails == null ? false : userDetails.isEnabled();
 	}
 
+	protected boolean usernameTaken(String username) {
+		TypedQuery<Account> query = Account.findAccountsByUsername(username);
+		try {
+			query.getSingleResult();
+		} catch (NoResultException e1) {
+			return false;
+		} catch (EmptyResultDataAccessException e2) {
+			return false;
+		}
+		return true;
+	}
+
 	protected void logout() {
 		SecurityContextHolder.getContext().setAuthentication(null);
 		HttpSession session = ContextApplication.currentRequest().getSession();
@@ -104,11 +124,33 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        BeanItem<Account> userDetailsItem = new BeanItem<Account>(userDetails);
 
 		VerticalLayout layout = new VerticalLayout();
-		layout.setSpacing(true);
+//		layout.setSpacing(true);
 		layout.setMargin(true);
 
+		HorizontalLayout header = new HorizontalLayout();
+		header.setSpacing(true);
+//		Label label = new Label("<h3>" + userDetails.getUsername() + "</h3>");
+		Label label = new Label("<h3>Account</h3>");
+	        label.setContentMode(Label.CONTENT_XHTML);
+	        header.addComponent(label);
+	        header.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
+
+	        Button signOut = new Button("(Sign out)", new Button.ClickListener() {
+	            @Override
+	            public void buttonClick(Button.ClickEvent event) {
+	        	    //accountForm.discard();
+	        	    logout();
+	            }
+	        });
+	        signOut.setStyleName(BaseTheme.BUTTON_LINK);
+	        header.addComponent(signOut);
+	        header.setComponentAlignment(signOut, Alignment.MIDDLE_LEFT);
+
+	        layout.addComponent(header);
+
+
 	        final Form accountForm = new Form();
-	        accountForm.setCaption("Account details");
+//	        accountForm.setCaption("Account details");
 	        accountForm.setWriteThrough(false); // we want explicit 'apply'
 	        accountForm.setInvalidCommitted(false); // no invalid values in datamodel
 
@@ -118,7 +160,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 
 	        // Determines which properties are shown, and in which order:
 	        accountForm.setVisibleItemProperties(Arrays.asList(new String[] {
-	                "username", "emailAddress", "createdOn", "firstName", "lastName", "userRole" }));
+	                "username", "emailAddress", "createdOn", "firstName", "lastName", "location" }));
 
 	        // Add form to layout
 	        layout.addComponent(accountForm);
@@ -143,17 +185,18 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 			public void buttonClick(ClickEvent event) {
 	                try {
 	                    accountForm.commit();
-		                userDetails.merge();
-		                saveChanges.setEnabled(false);
 	                } catch (Exception e) {
 	                    // Ignored, we'll let the Form handle the errors
+	                    return;
 	                }
+	                userDetails.merge();
+	                saveChanges.setEnabled(false);
 	            }
 	        });
 	        saveChanges.setEnabled(false);
 	        buttons.addComponent(saveChanges);
 
-	        buttons.addComponent(new Button("Change password", new Button.ClickListener() {
+	        Button change = new Button("Change password", new Button.ClickListener() {
 
 			private static final long serialVersionUID = 1036503706435451855L;
 
@@ -164,18 +207,10 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	                    // Ignored, we'll let the Form handle the errors
 	                }
 	            }
-	        }));
-
-	        Button signOut = new Button("Sign out", new Button.ClickListener() {
-	            @Override
-	            public void buttonClick(Button.ClickEvent event) {
-	        	    accountForm.discard();
-	        	    logout();
-	            }
 	        });
-	        signOut.setStyleName(BaseTheme.BUTTON_LINK);
-	        buttons.addComponent(signOut);
-	        buttons.setComponentAlignment(signOut, Alignment.MIDDLE_LEFT);
+	        change.setStyleName(BaseTheme.BUTTON_LINK);
+	        buttons.addComponent(change);
+	        buttons.setComponentAlignment(change, Alignment.MIDDLE_LEFT);
 
 	        accountForm.getFooter().addComponent(buttons);
 	        accountForm.getFooter().setMargin(true, true, false, false);
@@ -227,17 +262,18 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 			private static final long serialVersionUID = 1036503706435451855L;
 
 			public void buttonClick(ClickEvent event) {
-//	                try {
+	                try {
 	                	registrationForm.commit();
-//	                } catch (Exception e) {
-//	                    // Ignored, we'll let the Form handle the errors
-//	                }
+	                } catch (Exception e) {
+	                    // Ignored, we'll let the Form handle the errors
+	                    return;
+	                }
 	                userDetails.persist();
-                	boolean success = springBaseAuthenticationFilter.performLogin(
+                	springBaseAuthenticationFilter.performLogin(
         				ContextApplication.currentRequest(),
         				ContextApplication.currentResponse(),
-        				userDetails.getUsername(), userDetails.getPassword());
-                	assert success;
+        				userDetails.getUsername(), userDetails.getPassword(), false);
+                	assert isAuthenticated();
 	                setMainComponent(buildAccountDetails());
 	            }
 	        });
@@ -300,7 +336,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	}
 
 	protected Layout buildWelcome() {
-		HorizontalLayout layout = new HorizontalLayout();
+		/*HorizontalLayout layout = new HorizontalLayout();
 		layout.setSpacing(true);
 		layout.setMargin(true);
 		layout.setSizeFull();
@@ -316,7 +352,8 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		layout.addComponent(b);
 		layout.setComponentAlignment(b, Alignment.TOP_CENTER);
 
-		return layout;
+		return layout;*/
+		return buildSignIn();
 	}
 
 	protected Layout buildSignIn() {
@@ -326,7 +363,8 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		layout.setMargin(true);
 
 		HorizontalLayout header = new HorizontalLayout();
-		header.setSpacing(true);
+//		header.setSpacing(true);
+		header.setWidth("400px");
 
 	        Label label = new Label("<h3>Log in</h3>");
 	        label.setContentMode(Label.CONTENT_XHTML);
@@ -342,12 +380,26 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        register.setStyleName(BaseTheme.BUTTON_LINK);
 	        header.addComponent(register);
 	        header.setComponentAlignment(register, Alignment.MIDDLE_LEFT);
+
+	        Button forgot = new Button("Forgot your password?", new Button.ClickListener() {
+	            @Override
+	            public void buttonClick(Button.ClickEvent event) {
+	        	    setMainComponent(buildForgotPassword());
+	            }
+	        });
+	        forgot.setStyleName(BaseTheme.BUTTON_LINK);
+	        header.addComponent(forgot);
+	        header.setComponentAlignment(forgot, Alignment.MIDDLE_RIGHT);
+
 	        layout.addComponent(header);
 
+	        // login form
 		LoginForm login = new AccountLoginForm();
 
-	        login.setWidth("300px");
-	        login.setHeight("150px");
+	        login.setWidth("400px");
+	        login.setHeight("200px");
+//	        login.setWidth("100%");
+//	        login.setHeight("100%");
 
 //		login.setStyleName("account");
 		login.setLoginButtonCaption("Log in");
@@ -359,13 +411,14 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 			public void onLogin(LoginEvent event) {
 				String username = event.getLoginParameter("username");
 				String password = event.getLoginParameter("password");
+				boolean remember = event.getLoginParameter("remember") != null;
 
-	        		boolean success = springBaseAuthenticationFilter.performLogin(
+	        		springBaseAuthenticationFilter.performLogin(
 	        				ContextApplication.currentRequest(),
 	        				ContextApplication.currentResponse(),
-	        				username, password);
+	        				username, password, remember);
 
-	        		if (success) {
+	        		if (isAuthenticated()) {
 	        			String desc  = "";
 	        			Account acc = getUserDetails();
 	        			if (null != acc) {
@@ -379,12 +432,12 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		        		getMainWindow().showNotification(
 		        				"Signed in as: " + username,
 		        				desc,
-		        				Notification.TYPE_TRAY_NOTIFICATION);
+		        				Notification.TYPE_HUMANIZED_MESSAGE);
 		        		setMainComponent(buildAccountDetails());
 	        		} else {
 					getMainWindow().showNotification("Login Failed",
 		        				"Incorrect username (" + username + ") or password",
-		        				Notification.TYPE_TRAY_NOTIFICATION);
+		        				Notification.TYPE_WARNING_MESSAGE);
 			        	setMainComponent(buildSignIn());
 				}
 	        	}
@@ -394,25 +447,10 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        // inside a sized Panel or Window.
 //	        Panel panel = new Panel();
 //	        panel.addComponent(login);
-//	        panel.setHeight("400px");
-//	        panel.setWidth("600px");
+//	        panel.setHeight("200px");
+//	        panel.setWidth("400px");
 //	        layout.addComponent(panel);
 	        layout.addComponent(login);
-
-//	        VerticalLayout links = new VerticalLayout();
-//	        links.setSpacing(true);
-
-	        Button forgot = new Button("Forgot your password?", new Button.ClickListener() {
-	            @Override
-	            public void buttonClick(Button.ClickEvent event) {
-	        	    setMainComponent(buildForgotPassword());
-	            }
-	        });
-	        forgot.setStyleName(BaseTheme.BUTTON_LINK);
-	        layout.addComponent(forgot);
-	        layout.setComponentAlignment(forgot, Alignment.MIDDLE_LEFT);
-
-//	        layout.addComponent(links);
 
 	        return layout;
 	}
@@ -452,6 +490,10 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 
 	}
 
+	public void setWindowTitle(String windowTitle) {
+		this.windowTitle = windowTitle;
+	}
+
 	private class UserDetailsFieldFactory extends DefaultFieldFactory {
 
 		private static final long serialVersionUID = 4518551037064353650L;
@@ -489,25 +531,36 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	                TextField tf = (TextField) f;
 	                tf.setImmediate(true);
 //	                tf.setRequired(true);
-	                tf.setRequiredError("Please enter a First Name");
+//	                tf.setRequiredError("Please enter a First Name");
 	                tf.setWidth(COMMON_FIELD_WIDTH);
 	                tf.addValidator(new StringLengthValidator(
-	                        "First Name must be 3-25 characters", 3, 25, false));
+	                        "First name must be 3-32 characters", 3, 32, false));
 	            } else if ("lastName".equals(propertyId)) {
 	                TextField tf = (TextField) f;
 	                tf.setImmediate(true);
 //	                tf.setRequired(true);
-	                tf.setRequiredError("Please enter a Last Name");
+//	                tf.setRequiredError("Please enter a Last Name");
 	                tf.setWidth(COMMON_FIELD_WIDTH);
 	                tf.addValidator(new StringLengthValidator(
-	                        "Last Name must be 3-50 characters", 3, 50, false));
+	                        "Last name must be 3-64 characters", 3, 64, false));
 	            } else if ("username".equals(propertyId)) {
 		        TextField tf = (TextField) f;
 	                tf.setReadOnly(true);
+	                tf.setRequiredError("");
 	                tf.setWidth(COMMON_FIELD_WIDTH);
+	                tf.addValidator(new StringLengthValidator(
+		                "Username must be 3-32 characters", 3, 32, false));
 	            } else if ("emailAddress".equals(propertyId)) {
 		        TextField tf = (TextField) f;
-	                tf.setReadOnly(true);
+	                tf.setImmediate(true);
+	                tf.setWidth(COMMON_FIELD_WIDTH);
+	                tf.addValidator(new EmailValidator(
+	                	"Please enter a syntactically valid email address"));
+	            } else if ("location".equals(propertyId)) {
+		        TextField tf = (TextField) f;
+	                tf.setImmediate(true);
+	                tf.addValidator(new StringLengthValidator(
+		                "Location must be less than 32 characters", 0, 32, false));
 	                tf.setWidth(COMMON_FIELD_WIDTH);
 	            } else if ("createdOn".equals(propertyId)) {
 		        DateField df = (DateField) f;
@@ -549,10 +602,6 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        }
 	    }
 
-	public void setWindowTitle(String windowTitle) {
-		this.windowTitle = windowTitle;
-	}
-
 	private class RegistrationFieldFactory extends DefaultFieldFactory {
 
 		private static final long serialVersionUID = 4353650455103718506L;
@@ -574,25 +623,59 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 
 	            if ("username".equals(propertyId)) {
 		        TextField tf = (TextField) f;
+		        tf.setInputPrompt("Username");
 	                tf.setRequired(true);
-	                tf.setRequiredError("Please enter a username");
+	                tf.setRequiredError("Username must be alphanumeric and between 3 and 32 characters");
 	                tf.setWidth(COMMON_FIELD_WIDTH);
 	                tf.addValidator(new StringLengthValidator(
-		                        "Last Name must be 3-30 characters", 3, 30, false));
+		                        "Last name must be 3-32 characters", 3, 32, false));
+
+	                tf.setTextChangeEventMode(TextChangeEventMode.LAZY);
+	                tf.setTextChangeTimeout(1000);
+	                tf.addListener(new FieldEvents.TextChangeListener() {
+
+	                    public void textChange(TextChangeEvent event) {
+	                	String username = event.getText();
+	                	if (username.length() < 3) return;
+	                	boolean taken = usernameTaken(username);
+	                	TextField tf = (TextField) event.getComponent();
+	                	if (taken) {
+	                		getMainWindow().showNotification("Username taken: " + username,
+		        				Notification.TYPE_WARNING_MESSAGE);
+	                	} else {
+	                		getMainWindow().showNotification("Username available: " + username,
+		        				Notification.TYPE_HUMANIZED_MESSAGE);
+	                	}
+	                    }
+	                });
+
+	                tf.addValidator(new AbstractValidator("Username unavailable") {
+
+				@Override
+				public boolean isValid(Object value) {
+					String username = (String) value;
+					setErrorMessage("Username \"" + username + "\" is already taken");
+					return !usernameTaken(username);
+				}
+			});
+
+
 	            } else if ("emailAddress".equals(propertyId)) {
 		        TextField tf = (TextField) f;
-	                tf.setRequired(true);
-	                tf.setRequiredError("Please enter an email address");
+		        tf.setInputPrompt("Email address");
+	                //tf.setRequired(true);
+	                //tf.setRequiredError("Please enter an email address");
 	                tf.setWidth(COMMON_FIELD_WIDTH);
 	                tf.addValidator(new EmailValidator(
 	                		"Please enter a syntactically valid email address"));
 	            } else if ("password".equals(propertyId)) {
 	                PasswordField pf = (PasswordField) f;
+		        pf.setInputPrompt("Password");
 	                pf.setRequired(true);
-	                pf.setRequiredError("Please enter a password");
+	                pf.setRequiredError("Password must at least 7 characters");
 	                pf.setWidth("10em");
 	                pf.addValidator(new StringLengthValidator(
-	                        "Password must be 6-20 characters", 6, 20, false));
+	                        "Password must be 7-64 characters", 7, 64, false));
 	            }
 
 	            return f;

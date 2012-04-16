@@ -10,6 +10,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.roo.addon.javabean.RooJavaBean;
 import org.springframework.roo.addon.jpa.activerecord.RooJpaActiveRecord;
@@ -24,18 +25,15 @@ public class Account implements UserDetails {
 
     private static final long serialVersionUID = -5706435451865101650L;
 
-    public Account() {
-	super();
-	this.createdOn = new Date();
-    }
-
     @NotNull
-    @Size(min = 3)
+    @Size(min = 3, max = 32)
     @Column(unique = true)
+    @Value("")
     private String username;
 
     @NotNull
-    @Size(min = 6)
+    @Size(min = 7, max = 64)
+    @Value("")
     private String password;
 
     @NotNull
@@ -44,14 +42,15 @@ public class Account implements UserDetails {
     private Role userRole;
 
     @Column(name = "first_name")
+    @Size(min = 3, max = 32)
     private String firstName;
 
     @Column(name = "last_name")
+    @Size(min = 3, max = 64)
     private String lastName;
 
-    @NotNull
     @Column(name = "email_address")
-    @Size(min = 1)
+    @Value("")
     private String emailAddress;
 
     @NotNull
@@ -66,6 +65,14 @@ public class Account implements UserDetails {
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(style = "M-")
     private Date lastSignIn;
+
+    @Size(max = 32)
+    private String location;
+
+    public Account() {
+        super();
+        this.createdOn = new Date();
+    }
 
     @Override
     public String getUsername() {

@@ -74,4 +74,12 @@ privileged aspect Account_Roo_JavaBean {
         this.lastSignIn = lastSignIn;
     }
     
+    public String Account.getLocation() {
+        return this.location;
+    }
+    
+    public void Account.setLocation(String location) {
+        this.location = location;
+    }
+    
 }

@@ -29,7 +29,7 @@ public class InsertDefaultAccounts implements ApplicationListener<ContextRefresh
         accountAdminActive.setPassword(PASSWORD);
         accountAdminActive.setUserRole(Role.ROLE_ADMIN);
         accountAdminActive.setStatus(Status.ACTIVE);
-        accountAdminActive.setEmailAddress("admin@localhost");
+        accountAdminActive.setEmailAddress("admin@example.com");
         accountAdminActive.persist();
 
         Account accountUserActive = new Account();
@@ -39,7 +39,7 @@ public class InsertDefaultAccounts implements ApplicationListener<ContextRefresh
         accountUserActive.setFirstName("Peter");
         accountUserActive.setLastName("Jones");
         accountUserActive.setStatus(Status.ACTIVE);
-        accountUserActive.setEmailAddress("user@localhost");
+        accountUserActive.setEmailAddress("user@example.com");
         accountUserActive.persist();
     }
 }
