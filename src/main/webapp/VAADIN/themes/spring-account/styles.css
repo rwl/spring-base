@@ -8,8 +8,40 @@
 .v-customcomponent {}
 .v-customcomponent .v-embedded {}
 /*.v-customcomponent.v-customcomponent-v-loginform.v-loginform {width: 100%}
-.v-customcomponent.v-customcomponent-account.account {width: 240px; height: 200px}*/
+.v-customcomponent.v-customcomponent-account.account {width: 240px; height: 200px}
 
-/*.v-app-loginpage {width: 100%}*/
+.v-app-loginpage {
+}
 .v-app-loginpage .v-textfield {width: 100%}
 .v-app-loginpage .v-button {}
+
+.v-form {
+	background-color: rgb(240, 240, 240);
+	border-radius: 0pt 0pt 5px 5px;
+}
+.v-form legend
+.v-form fieldset {
+	    border: thin solid;
+}
+.v-form-error {}
+.v-form-errormessage {}
+.v-form-description {}
+
+
+.v-horizontallayout-header.header {
+	background: -moz-linear-gradient(rgb(130, 154, 168), rgb(88, 109, 122)) repeat scroll 0% 0% transparent;
+	border-radius: 5px 5px 0pt 0pt;
+	margin: 0px 0px;
+}
+
+.v-horizontallayout-header.header h3 {
+	color: #E9F1F4;
+	font-size: 14px;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.7);
+	border-radius: 3px 3px 0 0;
+}
+
+
+.v-button {
+	color: #E9F1F4;
+}*/

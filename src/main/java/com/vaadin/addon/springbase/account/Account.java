@@ -42,11 +42,13 @@ public class Account implements UserDetails {
     private Role userRole;
 
     @Column(name = "first_name")
-    @Size(min = 3, max = 32)
+    @Size(max = 32)
+    @Value("")
     private String firstName;
 
     @Column(name = "last_name")
-    @Size(min = 3, max = 64)
+    @Size(max = 64)
+    @Value("")
     private String lastName;
 
     @Column(name = "email_address")
