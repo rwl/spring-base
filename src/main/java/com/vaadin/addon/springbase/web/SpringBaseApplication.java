@@ -24,6 +24,7 @@ import com.vaadin.addon.springbase.account.Status;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.validator.AbstractValidator;
 import com.vaadin.data.validator.EmailValidator;
@@ -53,6 +54,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.Notification;
 import com.vaadin.ui.themes.BaseTheme;
+import com.vaadin.ui.themes.ChameleonTheme;
 
 
 public class SpringBaseApplication extends SpringContextApplication implements HttpServletRequestListener {
@@ -118,6 +120,25 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		session.invalidate();
 	}
 
+	protected void setMainComponent(Layout layout) {
+//		layout.setSizeUndefined();
+
+//		Panel panel = new Panel();
+//		panel.setWidth("600px");
+//		panel.addComponent(layout);
+
+		VerticalLayout mainlayout = new VerticalLayout();
+		mainlayout.setWidth("480px");
+		mainlayout.setMargin(true);
+		mainlayout.addStyleName("mainlayout");
+		mainlayout.addComponent(layout);
+
+	        VerticalLayout outer = new VerticalLayout();
+	        outer.addComponent(mainlayout);
+	        outer.setComponentAlignment(mainlayout, Alignment.TOP_CENTER);
+		getMainWindow().setContent(outer);
+	}
+
 	protected Layout buildAccountDetails() {
 		final Account userDetails = getUserDetails();
 		if (userDetails == null) return buildWelcome();
@@ -127,14 +148,17 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 //		layout.setSpacing(true);
 
 		HorizontalLayout header = new HorizontalLayout();
-		header.setSpacing(true);
 		header.setStyleName("header");
 		header.setWidth("100%");
+		header.setMargin(true);
+
+		HorizontalLayout title = new HorizontalLayout();
+		title.setSpacing(true);
 //		Label label = new Label("<h3>" + userDetails.getUsername() + "</h3>");
-		Label label = new Label("<h3>Account</h3>");
-	        label.setContentMode(Label.CONTENT_XHTML);
-	        header.addComponent(label);
-	        header.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
+		Label label = new Label("Account");
+//	        label.setContentMode(Label.CONTENT_XHTML);
+	        title.addComponent(label);
+	        title.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
 
 	        Button signOut = new Button("(Sign out)", new Button.ClickListener() {
 	            @Override
@@ -144,16 +168,19 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	            }
 	        });
 	        signOut.setStyleName(BaseTheme.BUTTON_LINK);
-	        signOut.addStyleName("headerlink");
-	        header.addComponent(signOut);
-	        header.setComponentAlignment(signOut, Alignment.MIDDLE_LEFT);
+	        signOut.addStyleName("header");
+	        title.addComponent(signOut);
+	        title.setComponentAlignment(signOut, Alignment.MIDDLE_LEFT);
+
+	        header.addComponent(title);
+	        header.setComponentAlignment(title, Alignment.MIDDLE_LEFT);
 
 	        layout.addComponent(header);
 
 
 	        final Form accountForm = new Form();
 	        accountForm.setWidth("100%");
-	        accountForm.setCaption(userDetails.getUsername());
+	        accountForm.setCaption(userDetails.getUsername() + "'s profile");
 	        accountForm.setWriteThrough(false); // we want explicit 'apply'
 	        accountForm.setInvalidCommitted(false); // no invalid values in datamodel
 
@@ -232,18 +259,24 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		layout.setSpacing(true);
 
 		HorizontalLayout header = new HorizontalLayout();
-		header.setSpacing(true);
 		header.setStyleName("header");
 		header.setWidth("100%");
-		Label label = new Label("<h3>Register</h3>");
-	        label.setContentMode(Label.CONTENT_XHTML);
-	        header.addComponent(label);
-	        header.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
+		header.setMargin(true);
+
+		HorizontalLayout title = new HorizontalLayout();
+		title.setSpacing(true);
+		Label label = new Label("Register");
+	        title.addComponent(label);
+	        title.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
 
 	        Button logIn = new Button("(Log in)");
-	        logIn.setStyleName(BaseTheme.BUTTON_LINK);
-	        header.addComponent(logIn);
-	        header.setComponentAlignment(logIn, Alignment.MIDDLE_LEFT);
+	        logIn.addStyleName(BaseTheme.BUTTON_LINK);
+	        logIn.addStyleName("header");
+	        title.addComponent(logIn);
+	        title.setComponentAlignment(logIn, Alignment.MIDDLE_LEFT);
+
+	        header.addComponent(title);
+	        header.setComponentAlignment(title, Alignment.MIDDLE_LEFT);
 
 	        layout.addComponent(header);
 
@@ -257,25 +290,32 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        registrationForm.setFormFieldFactory(new RegistrationFieldFactory());
 	        registrationForm.setItemDataSource(userDetailsItem); // bind to POJO via BeanItem
 
-//	        PasswordField confirm = new PasswordField();
-//                confirm.addValidator(new AbstractValidator("Confirm password correctly") {
-//
-//			@Override
-//			public boolean isValid(Object value) {
-//				String password = (String) value;
-//				PasswordField field = (PasswordField) registrationForm.getField("password");
-//				return password.equals((String) field.getValue());
-//			}
-//		});
-//	        registrationForm.addField("confirm", confirm);
-
 	        // Determines which properties are shown, and in which order:
 	        registrationForm.setVisibleItemProperties(Arrays.asList(new String[] {
-	                "username", "emailAddress", "password", "password" }));
+	                "username", "emailAddress", "password" }));
 
 
 	        // Add form to layout
 	        layout.addComponent(registrationForm);
+
+	        final PasswordField confirm = new PasswordField("Confirm password");
+	        confirm.setRequired(true);
+	        confirm.setInputPrompt("Password");
+	        confirm.setWidth(COMMON_FIELD_WIDTH);
+                confirm.addValidator(new AbstractValidator("Passwords do not match") {
+
+			@Override
+			public boolean isValid(Object value) {
+				String password = (String) value;
+				PasswordField field = (PasswordField) registrationForm.getField("password");
+				return password.equals((String) field.getValue());
+			}
+		});
+                confirm.addValidator(new StringLengthValidator(
+                        "Password must be 7-64 characters", 7, 64, false));
+	        registrationForm.getLayout().addComponent(confirm);
+//	        registrationForm.addField("password", confirm);
+
 
 	        // The cancel / apply buttons
 	        HorizontalLayout buttons = new HorizontalLayout();
@@ -286,6 +326,12 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 			private static final long serialVersionUID = 1036503706435451855L;
 
 			public void buttonClick(ClickEvent event) {
+			try {
+				confirm.validate();
+			} catch (InvalidValueException e) {
+		                // Ignored, we'll let the Form handle the errors
+				return;
+			}
 	                try {
 	                	registrationForm.commit();
 	                } catch (Exception e) {
@@ -301,6 +347,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	                setMainComponent(buildAccountDetails());
 	            }
 	        });
+	        submit.addStyleName(ChameleonTheme.BUTTON_WIDE);
 	        buttons.addComponent(submit);
 
 	        logIn.addListener(new Button.ClickListener() {
@@ -378,17 +425,22 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	protected Layout buildSignIn() {
 //		HorizontalLayout layout = new HorizontalLayout();
 		VerticalLayout layout = new VerticalLayout();
-//		layout.setSpacing(true);
+		layout.addStyleName("login");
+		layout.setSpacing(true);
 
 		HorizontalLayout header = new HorizontalLayout();
-//		header.setSpacing(true);
-		header.setWidth("400px");
 		header.setStyleName("header");
+		header.setWidth("100%");
+		header.setMargin(true);
 
-	        Label label = new Label("<h3>Log in</h3>");
-	        label.setContentMode(Label.CONTENT_XHTML);
-	        header.addComponent(label);
-	        header.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
+		HorizontalLayout title = new HorizontalLayout();
+		title.setSpacing(true);
+//		title.setWidth("400px");
+
+	        Label label = new Label("Log in");
+//	        label.setContentMode(Label.CONTENT_XHTML);
+	        title.addComponent(label);
+	        title.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
 
 	        Button register = new Button("(Register)", new Button.ClickListener() {
 	            @Override
@@ -396,9 +448,13 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        	    setMainComponent(buildRegisterAccount());
 	            }
 	        });
-	        register.setStyleName(BaseTheme.BUTTON_LINK);
-	        header.addComponent(register);
-	        header.setComponentAlignment(register, Alignment.MIDDLE_LEFT);
+	        register.addStyleName(BaseTheme.BUTTON_LINK);
+	        register.addStyleName("header");
+	        title.addComponent(register);
+	        title.setComponentAlignment(register, Alignment.MIDDLE_LEFT);
+
+	        header.addComponent(title);
+	        header.setComponentAlignment(title, Alignment.MIDDLE_LEFT);
 
 	        Button forgot = new Button("Forgot your password?", new Button.ClickListener() {
 	            @Override
@@ -406,7 +462,8 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        	    setMainComponent(buildForgotPassword());
 	            }
 	        });
-	        forgot.setStyleName(BaseTheme.BUTTON_LINK);
+	        forgot.addStyleName(BaseTheme.BUTTON_LINK);
+	        forgot.addStyleName("header");
 	        header.addComponent(forgot);
 	        header.setComponentAlignment(forgot, Alignment.MIDDLE_RIGHT);
 
@@ -415,10 +472,10 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        // login form
 		LoginForm login = new AccountLoginForm();
 
-	        login.setWidth("400px");
-	        login.setHeight("200px");
-//	        login.setWidth("100%");
-//	        login.setHeight("100%");
+//	        login.setWidth("400px");
+//	        login.setHeight("200px");
+	        login.setWidth("100%");
+	        login.setHeight("100%");
 
 //		login.setStyleName("account");
 		login.setLoginButtonCaption("Log in");
@@ -444,7 +501,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        				if (acc.getLastSignIn() != null) {
 		        				desc = "Last sign in: " + acc.getLastSignIn().toString();
 		        			} else {
-		        				desc = "First time signing in";
+		        				desc = "";
 		        			}
 	        				acc.setLastSignIn(new Date());
 	        		        }
@@ -493,19 +550,6 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        layout.setComponentAlignment(cancel, Alignment.MIDDLE_LEFT);
 
 		return layout;
-	}
-
-	protected void setMainComponent(Layout layout) {
-//		layout.setSizeUndefined();
-
-		Panel panel = new Panel();
-		panel.setWidth("600px");
-		panel.addComponent(layout);
-
-	        VerticalLayout outer = new VerticalLayout();
-	        outer.addComponent(panel);
-	        outer.setComponentAlignment(panel, Alignment.TOP_CENTER);
-		getMainWindow().setContent(outer);
 	}
 
 	private class AccountChangeListener implements ValueChangeListener {
@@ -583,6 +627,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	                tf.setWidth(COMMON_FIELD_WIDTH);
 	                tf.addValidator(new EmailValidator(
 	                	"Please enter a syntactically valid email address"));
+	                tf.setCaption("Email");
 	            } else if ("location".equals(propertyId)) {
 		        TextField tf = (TextField) f;
 	                tf.setImmediate(true);
@@ -691,7 +736,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		        TextField tf = (TextField) f;
 		        tf.setInputPrompt("Email address");
 	                //tf.setRequired(true);
-	                //tf.setRequiredError("Please enter an email address");
+	                tf.setRequiredError("Required for password reset");
 	                tf.setWidth(COMMON_FIELD_WIDTH);
 	                tf.addValidator(new EmailValidator(
 	                		"Please enter a syntactically valid email address"));
@@ -700,7 +745,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 		        pf.setInputPrompt("Password");
 	                pf.setRequired(true);
 	                pf.setRequiredError("Password must at least 7 characters");
-	                pf.setWidth("10em");
+	                pf.setWidth(COMMON_FIELD_WIDTH);
 	                pf.addValidator(new StringLengthValidator(
 	                        "Password must be 7-64 characters", 7, 64, false));
 	            }

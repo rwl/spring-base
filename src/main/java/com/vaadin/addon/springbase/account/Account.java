@@ -69,6 +69,7 @@ public class Account implements UserDetails {
     private Date lastSignIn;
 
     @Size(max = 32)
+    @Value("")
     private String location;
 
     public Account() {
