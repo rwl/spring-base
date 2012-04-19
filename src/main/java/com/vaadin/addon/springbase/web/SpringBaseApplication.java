@@ -31,6 +31,7 @@ import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
 import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Alignment;
@@ -62,6 +63,11 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	private static final long serialVersionUID = 3706435451855103650L;
 
 	private static final String COMMON_FIELD_WIDTH = "100%";
+
+	private static final ThemeResource GOOGLE_ICON = new ThemeResource("img/google.png");
+	private static final ThemeResource GITHUB_ICON = new ThemeResource("img/github.png");
+	private static final ThemeResource FACEBOOK_ICON = new ThemeResource("img/facebook.png");
+	private static final ThemeResource TWITTER_ICON = new ThemeResource("img/twitter.png");
 
 	private String windowTitle;
 
@@ -469,6 +475,10 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 
 	        layout.addComponent(header);
 
+	        HorizontalLayout body = new HorizontalLayout();
+	        body.setWidth("100%");
+	        body.setSpacing(true);
+
 	        // login form
 		LoginForm login = new AccountLoginForm();
 
@@ -519,6 +529,7 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 	        	}
 
 	        });
+
 	        // Login form is by default 100% width and height, so consider using it
 	        // inside a sized Panel or Window.
 //	        Panel panel = new Panel();
@@ -526,7 +537,60 @@ public class SpringBaseApplication extends SpringContextApplication implements H
 //	        panel.setHeight("200px");
 //	        panel.setWidth("400px");
 //	        layout.addComponent(panel);
-	        layout.addComponent(login);
+	        body.addComponent(login);
+
+	        VerticalLayout rhs = new VerticalLayout();
+	        rhs.setSizeFull();
+
+	        Label with = new Label("Sign in with");
+	        rhs.addComponent(with);
+	        rhs.setComponentAlignment(with, Alignment.TOP_LEFT);
+
+	        VerticalLayout buttons = new VerticalLayout();
+	        buttons.setSizeUndefined();
+
+	        Button google = new Button("Google", new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+			}
+		});
+	        google.setIcon(GOOGLE_ICON);
+	        google.addStyleName(BaseTheme.BUTTON_LINK);
+	        buttons.addComponent(google);
+
+	        Button github = new Button("GitHub", new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+			}
+		});
+	        github.setIcon(GITHUB_ICON);
+	        github.addStyleName(BaseTheme.BUTTON_LINK);
+	        buttons.addComponent(github);
+
+	        Button twitter = new Button("Twitter", new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+			}
+		});
+	        twitter.setIcon(TWITTER_ICON);
+	        twitter.addStyleName(BaseTheme.BUTTON_LINK);
+	        buttons.addComponent(twitter);
+
+	        Button facebook = new Button("Facebook", new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+			}
+		});
+	        facebook.setIcon(FACEBOOK_ICON);
+	        facebook.addStyleName(BaseTheme.BUTTON_LINK);
+	        buttons.addComponent(facebook);
+
+	        rhs.addComponent(buttons);
+	        rhs.setComponentAlignment(buttons, Alignment.MIDDLE_CENTER);
+
+	        body.addComponent(rhs);
+
+	        layout.addComponent(body);
 
 	        return layout;
 	}
